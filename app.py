@@ -27,6 +27,7 @@ def run_pipeline(transcript_text, transcript_file, url_input,
     voice = VOICE_OPTIONS.get(voice_label, DEFAULT_VOICE)
     tone  = TONE_OPTIONS.get(tone_label, "professional")
     mode  = "quick" if "Quick" in mode_label else "deep"
+    mode  = "quick" if "Quick" in mode_label else "deep"
 
     if transcript_file is not None:
         source = transcript_file.name
