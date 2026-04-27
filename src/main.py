@@ -1,5 +1,5 @@
 """
-src/main.py — Recap Studio
+src/main.py — Learncast
 """
 
 from __future__ import annotations
@@ -386,19 +386,19 @@ footer, .footer { display: none !important; }
 
 
 def build_ui():
-    with gr.Blocks(title="Recap Studio") as demo:
+    with gr.Blocks(title="Learncast") as demo:
 
         gr.HTML(f"""
         <div class="rs-topbar">
             <div class="rs-logo">
                 <span class="rs-logo-dot"></span>
-                Recap Studio
+                Learncast
             </div>
             <div class="rs-topbar-right">GPT-4o-mini &nbsp;·&nbsp; OpenAI TTS &nbsp;·&nbsp; Feynman + Story Arc</div>
         </div>
         <div class="rs-hero">
-            <h1>Turn any transcript<br>into a <span class="accent">podcast.</span></h1>
-            <p class="rs-hero-sub">Paste a transcript, upload a PDF, or drop a URL — spoken audio recap in seconds</p>
+            <h1>Learncast</h1>
+            <p class="rs-hero-sub">Turn any class transcript or PDF into a spoken audio recap — in minutes.</p>
             <div class="rs-chips">
                 <span class="rs-chip purple">AI-Powered</span>
                 <span class="rs-chip">3 input types</span>
@@ -523,4 +523,4 @@ def build_ui():
 
 
 if __name__ == "__main__":
-    build_ui().launch(server_name="0.0.0.0", server_port=7860, show_error=True, css=CSS)
+    build_ui().launch(server_name="0.0.0.0", server_port=7860, show_error=True, css=CSS, share=True)
