@@ -106,6 +106,12 @@ Open http://localhost:7860
 
 ---
 
+## Live Demo
+
+🚀 **Try it now:** https://a540cf883e14493f81.gradio.live
+
+*(Link active for 1 week — requires the local server to be running)*
+
 ## Demo Audio
 
 A sample output generated from the included class transcript is available here:
