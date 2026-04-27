@@ -7,6 +7,7 @@ import logging, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent / 'src'))
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -529,4 +530,4 @@ def build_ui():
 
 
 if __name__ == "__main__":
-    build_ui().launch(server_name="0.0.0.0", server_port=7860, show_error=True, css=CSS, share=True)
+    build_ui().launch(server_name="0.0.0.0", server_port=7860, show_error=True, css=CSS)
