@@ -188,7 +188,7 @@ Leave the student feeling capable, curious, and ready for more.
 
 ---
 
-TARGET LENGTH: 25 to 30 minutes of spoken audio (3,500 to 4,500 words total).
+TARGET LENGTH: 12 to 15 minutes of spoken audio (1,700 to 2,100 words total).
 Write as one flowing narrative — concepts connect to each other, nothing exists
 in isolation. Every section feeds into the next.
 Plain spoken English only. No markdown. No bullet points.\
@@ -295,7 +295,7 @@ def _call_openai(prompt: str) -> str:
     client   = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
         model                 = "gpt-5.2",
-        max_completion_tokens = 8192,
+        max_completion_tokens = 4096,
         messages              = [
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user",   "content": prompt},
