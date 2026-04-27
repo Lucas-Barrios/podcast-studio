@@ -39,12 +39,6 @@ SAMPLE_PATH = Path("data/raw/sample_transcript.txt")
 
 
 def run_pipeline(transcript_text: str, transcript_file, url_input: str):
-    """
-    Full pipeline: transcript -> LLM recap -> audio.
-    Yields progress updates after each stage.
-    """
-
-    # Resolve input source
     if transcript_file is not None:
         source = transcript_file.name
     elif url_input.strip():
@@ -53,22 +47,22 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
         if not transcript.is_valid:
             yield f"❌ Could not load URL: {transcript.error}", "", "", "", None
             return
-        stage1_msg = (
+        yield (
             f"✅ Stage 1 complete — {transcript.word_count:,} words loaded\n"
             f"   Source: {url_input.strip()[:60]}\n\n"
-            f"⏳ Stage 2 of 3 — Generating recap script with OpenAI..."
+            f"⏳ Stage 2 of 3 — Generating recap script with OpenAI...",
+            "", "", "", None
         )
-        yield stage1_msg, "", "", "", None
         script = generate_recap(transcript)
         if not script.is_valid:
             yield f"❌ Script generation failed: {script.error}", "", "", "", None
             return
-        stage2_msg = (
+        yield (
             f"✅ Stage 1 complete — {transcript.word_count:,} words loaded\n\n"
             f"✅ Stage 2 complete — {len(script.key_points)} key points extracted\n\n"
-            f"⏳ Stage 3 of 3 — Converting script to audio..."
+            f"⏳ Stage 3 of 3 — Converting script to audio...",
+            script.key_points_display(), script.quiz_display(), _format_script(script), None
         )
-        yield stage2_msg, script.key_points_display(), script.quiz_display(), _format_script(script), None
         audio = generate_audio(script)
         final_msg = (
             f"✅ Stage 1 complete — article fetched\n\n"
@@ -76,9 +70,7 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
             f"✅ Stage 3 complete — Audio ready\n"
             f"   Duration: {audio.duration_estimate} | Provider: {audio.provider.upper()}\n\n"
             f"🎙️  Your recap podcast is ready!"
-        ) if audio.success else (
-            f"✅ Stages 1 and 2 complete\n⚠️  Audio failed: {audio.error}"
-        )
+        ) if audio.success else f"✅ Stages 1 and 2 complete\n⚠️  Audio failed: {audio.error}"
         yield final_msg, script.key_points_display(), script.quiz_display(), _format_script(script), audio.file_path if audio.success else None
         return
     elif transcript_text.strip():
@@ -87,54 +79,44 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
         yield "❌ Please paste a transcript, upload a file, or enter a URL.", "", "", "", None
         return
 
-    # Stage 1
     yield "⏳ Stage 1 of 3 — Loading transcript...", "", "", "", None
-
     transcript = load_transcript(source)
     if not transcript.is_valid:
         yield f"❌ Could not load transcript: {transcript.error}", "", "", "", None
         return
 
-    stage1_msg = (
+    yield (
         f"✅ Stage 1 complete — {transcript.word_count:,} words loaded\n"
         f"   Class: {transcript.class_name} | Date: {transcript.date}\n\n"
-        f"⏳ Stage 2 of 3 — Generating recap script with OpenAI..."
+        f"⏳ Stage 2 of 3 — Generating recap script with OpenAI...",
+        "", "", "", None
     )
-    yield stage1_msg, "", "", "", None
 
-    # Stage 2
     script = generate_recap(transcript)
     if not script.is_valid:
         yield f"❌ Script generation failed: {script.error}", "", "", "", None
         return
 
-    stage2_msg = (
+    yield (
         f"✅ Stage 1 complete — {transcript.word_count:,} words loaded\n"
         f"   Class: {transcript.class_name} | Date: {transcript.date}\n\n"
         f"✅ Stage 2 complete — {len(script.key_points)} key points extracted\n\n"
-        f"⏳ Stage 3 of 3 — Converting script to audio..."
-    )
-    yield (
-        stage2_msg,
+        f"⏳ Stage 3 of 3 — Converting script to audio...",
         script.key_points_display(),
         script.quiz_display(),
         _format_script(script),
         None,
     )
 
-    # Stage 3
     audio = generate_audio(script)
 
     if not audio.success:
-        final_msg = (
+        yield (
             f"✅ Stage 1 complete — {transcript.word_count:,} words loaded\n"
             f"   Class: {transcript.class_name} | Date: {transcript.date}\n\n"
             f"✅ Stage 2 complete — {len(script.key_points)} key points extracted\n\n"
             f"⚠️  Stage 3 failed — {audio.error}\n"
-            f"   Script is still available below."
-        )
-        yield (
-            final_msg,
+            f"   Script is still available below.",
             script.key_points_display(),
             script.quiz_display(),
             _format_script(script),
@@ -142,16 +124,13 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
         )
         return
 
-    final_msg = (
+    yield (
         f"✅ Stage 1 complete — {transcript.word_count:,} words loaded\n"
         f"   Class: {transcript.class_name} | Date: {transcript.date}\n\n"
         f"✅ Stage 2 complete — {len(script.key_points)} key points extracted\n\n"
         f"✅ Stage 3 complete — Audio ready\n"
         f"   Duration: {audio.duration_estimate} | Provider: {audio.provider.upper()}\n\n"
-        f"🎙️  Your recap podcast is ready!"
-    )
-    yield (
-        final_msg,
+        f"🎙️  Your recap podcast is ready!",
         script.key_points_display(),
         script.quiz_display(),
         _format_script(script),
@@ -184,171 +163,172 @@ def load_sample() -> str:
     return "Sample file not found at data/raw/sample_transcript.txt"
 
 
+CSS = """
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+* { box-sizing: border-box; }
+
+body, .gradio-container {
+    background: #f7f7f5 !important;
+    font-family: 'DM Sans', sans-serif !important;
+}
+
+.app-header {
+    text-align: center;
+    padding: 2.5rem 2rem 1.5rem;
+    border-bottom: 1px solid #e8e8e4;
+    margin-bottom: 2rem;
+}
+.app-header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.4rem;
+    font-weight: 400;
+    color: #1a1a1a;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.5px;
+}
+.app-header p {
+    color: #6b6b6b;
+    font-size: 1rem;
+    font-weight: 300;
+    margin: 0;
+}
+.app-header .badge {
+    display: inline-block;
+    background: #1a1a1a;
+    color: #f7f7f5;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.gr-group, .gr-box, .gr-panel {
+    background: #ffffff !important;
+    border: 1px solid #e8e8e4 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
+}
+
+label span {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.07em !important;
+    text-transform: uppercase !important;
+    color: #6b6b6b !important;
+}
+
+textarea, input[type="text"] {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.9rem !important;
+    border-radius: 8px !important;
+    border-color: #e8e8e4 !important;
+    background: #fafaf8 !important;
+    color: #1a1a1a !important;
+}
+textarea:focus, input[type="text"]:focus {
+    border-color: #1a1a1a !important;
+    box-shadow: 0 0 0 3px rgba(26,26,26,0.06) !important;
+}
+
+button.primary {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    transition: all 0.15s ease !important;
+}
+button.primary:hover {
+    background: #333333 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15) !important;
+}
+
+button.secondary {
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+    border: 1px solid #e8e8e4 !important;
+    border-radius: 8px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    transition: all 0.15s ease !important;
+}
+button.secondary:hover {
+    background: #f7f7f5 !important;
+    border-color: #1a1a1a !important;
+}
+
+.section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6b6b6b;
+    margin: 0 0 0.5rem;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #e8e8e4;
+    margin: 1.25rem 0;
+}
+
+.status-box textarea {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.85rem !important;
+    line-height: 1.7 !important;
+    color: #3a3a3a !important;
+}
+
+.how-it-works {
+    background: #ffffff;
+    border: 1px solid #e8e8e4;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-top: 1.5rem;
+}
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+.step-num {
+    background: #1a1a1a;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.step p {
+    font-size: 0.85rem;
+    color: #6b6b6b;
+    margin: 0;
+    line-height: 1.6;
+}
+
+footer { display: none !important; }
+"""
+
+
 def build_ui() -> gr.Blocks:
 
-    css = """
-    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
-
-    * { box-sizing: border-box; }
-
-    body, .gradio-container {
-        background: #f7f7f5 !important;
-        font-family: 'DM Sans', sans-serif !important;
-    }
-
-    .app-header {
-        text-align: center;
-        padding: 2.5rem 2rem 1.5rem;
-        border-bottom: 1px solid #e8e8e4;
-        margin-bottom: 2rem;
-    }
-    .app-header h1 {
-        font-family: 'DM Serif Display', serif;
-        font-size: 2.4rem;
-        font-weight: 400;
-        color: #1a1a1a;
-        margin: 0 0 0.4rem;
-        letter-spacing: -0.5px;
-    }
-    .app-header p {
-        color: #6b6b6b;
-        font-size: 1rem;
-        font-weight: 300;
-        margin: 0;
-    }
-    .app-header .badge {
-        display: inline-block;
-        background: #1a1a1a;
-        color: #f7f7f5;
-        font-size: 0.72rem;
-        font-weight: 500;
-        letter-spacing: 0.08em;
-        padding: 0.25rem 0.75rem;
-        border-radius: 2rem;
-        margin-bottom: 1rem;
-        text-transform: uppercase;
-    }
-
-    .gr-group, .gr-box, .gr-panel {
-        background: #ffffff !important;
-        border: 1px solid #e8e8e4 !important;
-        border-radius: 12px !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
-    }
-
-    label span {
-        font-family: 'DM Sans', sans-serif !important;
-        font-size: 0.75rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.07em !important;
-        text-transform: uppercase !important;
-        color: #6b6b6b !important;
-    }
-
-    textarea, input[type="text"] {
-        font-family: 'DM Sans', sans-serif !important;
-        font-size: 0.9rem !important;
-        border-radius: 8px !important;
-        border-color: #e8e8e4 !important;
-        background: #fafaf8 !important;
-        color: #1a1a1a !important;
-    }
-    textarea:focus, input[type="text"]:focus {
-        border-color: #1a1a1a !important;
-        box-shadow: 0 0 0 3px rgba(26,26,26,0.06) !important;
-    }
-
-    button.primary {
-        background: #1a1a1a !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-family: 'DM Sans', sans-serif !important;
-        font-size: 0.9rem !important;
-        font-weight: 600 !important;
-        transition: all 0.15s ease !important;
-    }
-    button.primary:hover {
-        background: #333333 !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.15) !important;
-    }
-
-    button.secondary {
-        background: #ffffff !important;
-        color: #1a1a1a !important;
-        border: 1px solid #e8e8e4 !important;
-        border-radius: 8px !important;
-        font-family: 'DM Sans', sans-serif !important;
-        font-size: 0.85rem !important;
-        font-weight: 500 !important;
-        transition: all 0.15s ease !important;
-    }
-    button.secondary:hover {
-        background: #f7f7f5 !important;
-        border-color: #1a1a1a !important;
-    }
-
-    .section-label {
-        font-size: 0.72rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: #6b6b6b;
-        margin: 0 0 0.5rem;
-    }
-
-    .divider {
-        border: none;
-        border-top: 1px solid #e8e8e4;
-        margin: 1.25rem 0;
-    }
-
-    .status-box textarea {
-        font-family: 'DM Sans', sans-serif !important;
-        font-size: 0.85rem !important;
-        line-height: 1.7 !important;
-        color: #3a3a3a !important;
-    }
-
-    .how-it-works {
-        background: #ffffff;
-        border: 1px solid #e8e8e4;
-        border-radius: 12px;
-        padding: 1.5rem 2rem;
-        margin-top: 1.5rem;
-    }
-    .step {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 0.5rem 0;
-    }
-    .step-num {
-        background: #1a1a1a;
-        color: white;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.65rem;
-        font-weight: 700;
-        flex-shrink: 0;
-        margin-top: 2px;
-    }
-    .step p {
-        font-size: 0.85rem;
-        color: #6b6b6b;
-        margin: 0;
-        line-height: 1.6;
-    }
-
-    footer { display: none !important; }
-    """
-
-    with gr.Blocks(title="Recap Studio", css=css) as demo:
+    with gr.Blocks(title="Recap Studio") as demo:
 
         gr.HTML("""
         <div class="app-header">
@@ -361,14 +341,12 @@ def build_ui() -> gr.Blocks:
         with gr.Row(equal_height=False):
 
             with gr.Column(scale=1):
-
                 gr.HTML('<p class="section-label">📥 Paste Transcript</p>')
                 transcript_text = gr.Textbox(
                     label       = "",
                     placeholder = "Paste your class transcript here...\n\nTip: add a header like:\nTRANSCRIPT — Course Name | Class N\nDate: April 24, 2026\nInstructor: Prof. Name",
                     lines       = 14,
                 )
-
                 with gr.Row():
                     sample_btn = gr.Button("Load Sample", variant="secondary", scale=1)
                     clear_btn  = gr.Button("Clear",       variant="secondary", scale=1)
@@ -394,7 +372,6 @@ def build_ui() -> gr.Blocks:
                 )
 
             with gr.Column(scale=1):
-
                 gr.HTML('<p class="section-label">📊 Pipeline Status</p>')
                 status_box = gr.Textbox(
                     label        = "",
@@ -444,7 +421,7 @@ def build_ui() -> gr.Blocks:
             </div>
             <div class="step">
                 <div class="step-num">2</div>
-                <p><strong>llm_processor.py</strong> — sends to GPT-5.2 with Feynman + Story Arc prompting, builds structured script</p>
+                <p><strong>llm_processor.py</strong> — sends to GPT-4o-mini with Feynman + Story Arc prompting, builds structured script</p>
             </div>
             <div class="step">
                 <div class="step-num">3</div>
@@ -455,7 +432,6 @@ def build_ui() -> gr.Blocks:
 
         sample_btn.click(fn=load_sample, outputs=transcript_text)
         clear_btn.click(fn=lambda: ("", None, ""), outputs=[transcript_text, transcript_file, url_input])
-
         generate_btn.click(
             fn      = run_pipeline,
             inputs  = [transcript_text, transcript_file, url_input],
@@ -471,4 +447,5 @@ if __name__ == "__main__":
         server_name = "0.0.0.0",
         server_port = 7860,
         show_error  = True,
+        css         = CSS,
     )

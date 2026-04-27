@@ -294,7 +294,7 @@ def _call_openai(prompt: str) -> str:
         raise ValueError("OPENAI_API_KEY not set. Add it to your .env file.")
     client   = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
-        model                 = "gpt-5.2",
+        model                 = "gpt-4o-mini",
         max_completion_tokens = 4096,
         messages              = [
             {"role": "system", "content": _SYSTEM_PROMPT},

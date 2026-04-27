@@ -26,7 +26,7 @@ OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 _VOICE         = "nova"
-_TTS_CHUNK_MAX = 4000
+_TTS_CHUNK_MAX = 4096
 
 
 @dataclass
