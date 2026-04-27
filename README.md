@@ -1,3 +1,15 @@
+---
+title: Recap Studio
+emoji: 🎙️
+colorFrom: purple
+colorTo: indigo
+sdk: gradio
+sdk_version: "4.36.0"
+python_version: "3.11"
+app_file: app.py
+pinned: false
+---
+
 # 🎙️ Recap Studio
 
 > Transform any class transcript into a spoken podcast recap using AI.
