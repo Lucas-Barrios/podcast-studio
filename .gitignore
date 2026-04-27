@@ -8,3 +8,4 @@ output/*.wav
 !output/demo_recap.mp3
 .DS_Store
 .ipynb_checkpoints/
+output/
