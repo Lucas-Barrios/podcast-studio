@@ -1,0 +1,27 @@
+TRANSCRIPT — AI & Integration Consulting | Module 1, Class 3
+Date: April 24, 2026
+Instructor: Prof. Sarah Kim
+
+[00:00] Good morning everyone. Today we're covering three main topics: APIs, data pipelines, and prompt engineering basics.
+
+[02:15] Let's start with APIs. An API — Application Programming Interface — is essentially a contract between two software systems. When you call an API, you're saying: I'll send you data in this format, and you send me back a response in that format. REST APIs are the most common type you'll encounter. They use HTTP methods: GET to retrieve data, POST to send data, PUT to update, and DELETE to remove.
+
+[08:40] The key concept here is the request-response cycle. Your app sends a request with a URL, headers, and optionally a body. The server processes it and returns a status code plus a response body, usually in JSON format. Status codes matter — 200 means success, 400 means you sent bad data, 401 means unauthorized, 500 means the server broke. Memorize those four.
+
+[14:20] Now, authentication. Most APIs require you to prove who you are. The most common method today is API keys — a long string of random characters you include in your request header. Never hardcode API keys in your source code. Always use environment variables or a secrets manager. This will save you from very embarrassing security incidents.
+
+[21:05] Moving to data pipelines. A pipeline is just a series of processing steps where the output of one step becomes the input of the next. Think of it like an assembly line. Raw data comes in one end, processed and useful data comes out the other. The three stages you will always see are: Extract, Transform, and Load — ETL for short.
+
+[29:30] Common transformation operations include: filtering out bad records, normalizing formats like dates and currencies, joining data from multiple sources, and aggregating — computing sums, averages, counts. Python is excellent for this. Pandas is the standard library for tabular data transformations.
+
+[35:15] Error handling in pipelines is critical. What happens when one step fails? You need to decide: should the pipeline stop, skip that record and continue, or retry? Always log failures. Always have an alerting mechanism. A silent failure is the worst kind.
+
+[41:50] Now for prompt engineering. Large language models like Claude or GPT-4 don't execute instructions like a computer program. They predict what text comes next based on patterns learned during training. Your prompt is the starting context for that prediction.
+
+[48:10] The most important principle: be specific. Vague prompts produce vague outputs. If you want a list, ask for a list. If you want JSON, say respond only in JSON. If you want a formal tone, specify it. Include examples when possible — this is called few-shot prompting and it dramatically improves output quality.
+
+[54:30] System prompts versus user prompts. The system prompt sets the persona and rules — it is like the job description for the model. The user prompt is the actual task. In production systems, your system prompt is carefully engineered and stays constant. The user prompt changes with each request.
+
+[59:45] Chain-of-thought prompting: ask the model to think step by step before giving an answer. This forces it to reason through the problem and produces significantly better results on complex tasks.
+
+[64:20] Quick recap before we close. APIs are contracts between systems — learn the HTTP methods and status codes. Pipelines are ETL: Extract, Transform, Load — always handle errors. Prompt engineering: be specific, use examples, leverage system prompts, and use chain-of-thought for complex tasks. Next class we are doing hands-on API integration. Read chapters 4 and 5 before Thursday. See you then.
