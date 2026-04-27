@@ -27,7 +27,6 @@ def run_pipeline(transcript_text, transcript_file, url_input,
     voice = VOICE_OPTIONS.get(voice_label, DEFAULT_VOICE)
     tone  = TONE_OPTIONS.get(tone_label, "professional")
     mode  = "quick" if "Quick" in mode_label else "deep"
-    mode  = "quick" if "Quick" in mode_label else "deep"
 
     if transcript_file is not None:
         source = transcript_file.name
@@ -63,7 +62,7 @@ def run_pipeline(transcript_text, transcript_file, url_input,
 
     yield (f"✅ Loaded — {transcript.word_count:,} words · {transcript.class_name}\n⏳ Generating script with OpenAI...",
            "", "", "", None)
-    script = generate_recap(transcript, tone=tone)
+    script = generate_recap(transcript, tone=tone, mode=mode)
     if not script.is_valid:
         yield f"❌ {script.error}", "", "", "", None
         return
