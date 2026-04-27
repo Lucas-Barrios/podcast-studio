@@ -59,7 +59,7 @@ def run_pipeline(transcript_text, transcript_file, url_input,
 
     yield (f"✅ Loaded — {transcript.word_count:,} words · {transcript.class_name}\n⏳ Generating script with OpenAI...",
            "", "", "", None)
-    script = generate_recap(transcript, tone=tone)
+    script = generate_recap(transcript, tone=tone, mode=mode)
     if not script.is_valid:
         yield f"❌ {script.error}", "", "", "", None
         return
