@@ -357,7 +357,7 @@ def _call_openai(prompt: str, mode: str = 'deep') -> str:
     client   = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
         model                 = "gpt-4o-mini",
-        max_completion_tokens = 1000 if mode == 'quick' else 4096,
+        max_completion_tokens = 1400 if mode == 'quick' else 4096,
         messages              = [
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user",   "content": prompt},
