@@ -64,7 +64,7 @@ def run_pipeline(transcript_text: str, transcript_file):
     stage1_msg = (
         f"✅ Stage 1 complete — {transcript.word_count:,} words loaded\n"
         f"   Class: {transcript.class_name} | Date: {transcript.date}\n\n"
-        f"⏳ Stage 2 of 3 — Generating recap script with Claude..."
+        f"⏳ Stage 2 of 3 — Generating recap script with OpenAI..."
     )
     yield stage1_msg, "", "", "", None
 
@@ -159,7 +159,7 @@ def build_ui() -> gr.Blocks:
         gr.Markdown("""
         # 🎙️ Class Recap Podcast Generator
         Upload a class transcript and get a spoken audio recap in under a minute.
-        **Pipeline:** Transcript → Claude extracts key points → OpenAI TTS generates audio
+        **Pipeline:** Transcript → OpenAI extracts key points → OpenAI TTS generates audio
         """)
 
         gr.Markdown("---")
@@ -247,7 +247,7 @@ def build_ui() -> gr.Blocks:
         gr.Markdown("""
         **How it works:**
         `data_processor.py` → cleans transcript, strips timestamps, extracts metadata  
-        `llm_processor.py` → sends to Claude, extracts key points, builds structured script  
+        `llm_processor.py` → sends to OpenAI, extracts key points, builds structured script  
         `tts_generator.py` → converts script to MP3 via OpenAI TTS or free gTTS fallback
         """)
 
