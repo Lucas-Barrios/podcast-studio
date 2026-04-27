@@ -205,7 +205,7 @@ def _call_claude(prompt: str) -> str:
     client   = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
         model    = "gpt-5.2",
-        max_tokens = 2048,
+        max_completion_tokens = 2048,
         messages = [
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user",   "content": prompt},
