@@ -387,7 +387,7 @@ footer, .footer { display: none !important; }
 
 
 def build_ui():
-    with gr.Blocks(title="Recap Studio") as demo:
+    with gr.Blocks(title="Recap Studio", css=CSS) as demo:
 
         gr.HTML(f"""
         <div class="rs-topbar">
@@ -524,4 +524,4 @@ def build_ui():
 
 
 if __name__ == "__main__":
-    build_ui().launch(server_name="0.0.0.0", server_port=7860, show_error=True, css=CSS)
+    build_ui().launch(server_name="0.0.0.0", server_port=7860, show_error=True)
