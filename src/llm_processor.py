@@ -113,32 +113,33 @@ TONE: Clear, direct and professional. Warm but focused. No filler.
 
 
 def _build_quick_prompt(transcript, tone_instructions: str) -> str:
-    return f"""Transform this class transcript into a SHORT podcast recap — maximum 2-3 minutes when spoken.
+    return f"""Transform this class transcript into a 4-minute podcast recap.
 
 CONTEXT:
 - Course: {transcript.class_name}
 - Date: {transcript.date}
 
 TRANSCRIPT:
-{transcript.clean_text[:6000]}
+{transcript.clean_text[:4000]}
 
-OUTPUT FORMAT — produce each section with its label in square brackets.
-Write ONLY spoken words. No markdown, no bullets.
+STRICT OUTPUT FORMAT — use these exact section labels:
 
 [INTRO]
-1 sentence. Name the course and hook the listener.
+Exactly 2 sentences. Name the course, hook the listener.
 
 [KEY POINTS]
-3 key concepts only. Each one: name it, explain it in 2 sentences, say why it matters.
+Exactly 3 key concepts. For each: one sentence name and definition, one sentence why it matters.
+Total for this section: 6 sentences maximum.
 
 [TAKEAWAY]
-1 sentence starting with: If you remember only one thing from today...
+Exactly 1 sentence starting with: If you remember only one thing from today...
 
 [OUTRO]
-1 sentence. Warm close.
+Exactly 1 sentence. Warm close.
 
-TARGET: 150 to 200 words MAXIMUM. Extremely concise. Every word must earn its place.
-Plain spoken English only. No markdown.
+HARD LIMIT: 450 words total across ALL sections combined. Count carefully.
+Do not exceed 450 words under any circumstances.
+Plain spoken English only. No markdown. No bullet points.
 {tone_instructions}"""
 
 
