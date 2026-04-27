@@ -19,6 +19,12 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+TONE_OPTIONS = {
+    "Professional": "professional",
+    "Lively & Fun": "lively",
+    "Socratic":     "socratic",
+}
+
 
 @dataclass
 class RecapScript:
@@ -85,7 +91,28 @@ Take your time. Make it unforgettable.\
 """
 
 
-def _build_prompt(transcript) -> str:
+
+def _get_tone_instructions(tone: str) -> str:
+    if tone == "lively":
+        return """
+TONE: Be fun and conversational. Add a light joke every 2-3 concepts.
+Use phrases like "here's the thing...", "okay so...", "plot twist:".
+Add relatable student moments. Keep energy high. Still accurate.
+"""
+    elif tone == "socratic":
+        return """
+TONE: Open each concept with a question. Use "Think about this...".
+Challenge assumptions. Make the student discover answers themselves.
+End each concept with a question connecting to the next.
+"""
+    else:
+        return """
+TONE: Clear, direct and professional. Warm but focused. No filler.
+"""
+
+
+def _build_prompt(transcript, tone: str = 'professional') -> str:
+    tone_instructions = _get_tone_instructions(tone)
     return f"""\
 Transform this class transcript into a long-form educational podcast episode
 that combines the Feynman Method with a Story Arc structure.
@@ -191,7 +218,8 @@ Leave the student feeling capable, curious, and ready for more.
 TARGET LENGTH: 12 to 15 minutes of spoken audio (1,700 to 2,100 words total).
 Write as one flowing narrative — concepts connect to each other, nothing exists
 in isolation. Every section feeds into the next.
-Plain spoken English only. No markdown. No bullet points.\
+Plain spoken English only. No markdown. No bullet points.
+{tone_instructions}\
 """
 
 
@@ -304,7 +332,7 @@ def _call_openai(prompt: str) -> str:
     return response.choices[0].message.content
 
 
-def generate_recap(transcript) -> RecapScript:
+def generate_recap(transcript, tone: str = 'professional') -> RecapScript:
     """
     Transform a TranscriptData into a RecapScript using OpenAI.
     Uses Feynman Method + Story Arc prompt strategy.
@@ -319,7 +347,7 @@ def generate_recap(transcript) -> RecapScript:
     logger.info("Generating recap for: %s", transcript.class_name)
 
     try:
-        prompt = _build_prompt(transcript)
+        prompt = _build_prompt(transcript, tone=tone)
         raw    = _call_openai(prompt)
         script = _parse_response(raw, transcript)
         logger.info(

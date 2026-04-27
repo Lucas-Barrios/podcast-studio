@@ -25,8 +25,19 @@ logger = logging.getLogger(__name__)
 OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-_VOICE         = "nova"
 _TTS_CHUNK_MAX = 4096
+
+# Available voices — exposed to the UI
+VOICE_OPTIONS = {
+    "Nova (Female, Warm)":          "nova",
+    "Shimmer (Female, Soft)":       "shimmer",
+    "Alloy (Female, Neutral)":      "alloy",
+    "Echo (Male, Conversational)":  "echo",
+    "Onyx (Male, Deep)":            "onyx",
+    "Fable (Male, Expressive)":     "fable",
+}
+DEFAULT_VOICE = "nova"
+
 
 
 @dataclass
@@ -81,7 +92,7 @@ def _safe_filename(text: str, max_len: int = 40) -> str:
     return safe[:max_len] or "recap"
 
 
-def _generate_openai(text: str, output_path: Path) -> None:
+def _generate_openai(text: str, output_path: Path, voice: str = DEFAULT_VOICE) -> None:
     """Generate MP3 via OpenAI TTS."""
     from openai import OpenAI
 
@@ -91,14 +102,14 @@ def _generate_openai(text: str, output_path: Path) -> None:
 
     client = OpenAI(api_key=api_key)
     chunks = _chunk_text(text)
-    logger.info("OpenAI TTS: %d chunk(s), voice=%s", len(chunks), _VOICE)
+    logger.info("OpenAI TTS: %d chunk(s), voice=%s", len(chunks), voice)
 
     all_bytes = bytearray()
     for i, chunk in enumerate(chunks):
         logger.info("  Chunk %d/%d (%d chars)", i + 1, len(chunks), len(chunk))
         response = client.audio.speech.create(
             model           = "tts-1",
-            voice           = _VOICE,
+            voice           = voice,
             input           = chunk,
             response_format = "mp3",
         )
@@ -119,10 +130,11 @@ def _generate_gtts(text: str, output_path: Path) -> None:
     gTTS(text=text, lang="en", slow=False).save(str(output_path))
 
 
-def generate_audio(script, filename: Optional[str] = None) -> AudioResult:
+def generate_audio(script, filename: Optional[str] = None, voice: str = DEFAULT_VOICE) -> AudioResult:
     """
     Convert a RecapScript into an MP3 audio file.
     Uses OpenAI TTS if OPENAI_API_KEY is set, otherwise falls back to gTTS.
+    voice: one of the keys from VOICE_OPTIONS or a raw OpenAI voice name.
     """
     if not script.is_valid:
         return AudioResult(
@@ -141,7 +153,7 @@ def generate_audio(script, filename: Optional[str] = None) -> AudioResult:
 
     try:
         if provider == "openai":
-            _generate_openai(tts_text, output_path)
+            _generate_openai(tts_text, output_path, voice=voice)
         else:
             _generate_gtts(tts_text, output_path)
 

@@ -26,8 +26,8 @@ load_dotenv()
 import gradio as gr
 
 from data_processor import load_transcript, load_url
-from llm_processor  import generate_recap
-from tts_generator  import generate_audio
+from llm_processor  import generate_recap, TONE_OPTIONS
+from tts_generator  import generate_audio, VOICE_OPTIONS, DEFAULT_VOICE
 
 logging.basicConfig(
     level  = logging.INFO,
@@ -38,7 +38,10 @@ logger = logging.getLogger(__name__)
 SAMPLE_PATH = Path("data/raw/sample_transcript.txt")
 
 
-def run_pipeline(transcript_text: str, transcript_file, url_input: str):
+def run_pipeline(transcript_text: str, transcript_file, url_input: str, voice_label: str = 'Nova (Female, Warm)', tone_label: str = 'Professional'):
+    voice = VOICE_OPTIONS.get(voice_label, DEFAULT_VOICE)
+    tone  = TONE_OPTIONS.get(tone_label, 'professional')
+
     if transcript_file is not None:
         source = transcript_file.name
     elif url_input.strip():
@@ -53,7 +56,7 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
             f"⏳ Stage 2 of 3 — Generating recap script with OpenAI...",
             "", "", "", None
         )
-        script = generate_recap(transcript)
+        script = generate_recap(transcript, tone=tone)
         if not script.is_valid:
             yield f"❌ Script generation failed: {script.error}", "", "", "", None
             return
@@ -63,7 +66,7 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
             f"⏳ Stage 3 of 3 — Converting script to audio...",
             script.key_points_display(), script.quiz_display(), _format_script(script), None
         )
-        audio = generate_audio(script)
+        audio = generate_audio(script, voice=voice)
         final_msg = (
             f"✅ Stage 1 complete — article fetched\n\n"
             f"✅ Stage 2 complete — {len(script.key_points)} key points extracted\n\n"
@@ -364,6 +367,18 @@ def build_ui() -> gr.Blocks:
                     lines       = 1,
                 )
 
+                gr.HTML('<hr class="divider"><p class="section-label">🎙 Voice</p>')
+                voice_dropdown = gr.Dropdown(
+                    choices = list(VOICE_OPTIONS.keys()),
+                    value   = "Nova (Female, Warm)",
+                    label   = "",
+                )
+                gr.HTML('<p class="section-label" style="margin-top:0.75rem;">🎭 Tone</p>')
+                tone_dropdown = gr.Dropdown(
+                    choices = list(TONE_OPTIONS.keys()),
+                    value   = "Professional",
+                    label   = "",
+                )
                 gr.HTML('<hr class="divider">')
                 generate_btn = gr.Button(
                     "Generate Recap Podcast →",
@@ -434,7 +449,7 @@ def build_ui() -> gr.Blocks:
         clear_btn.click(fn=lambda: ("", None, ""), outputs=[transcript_text, transcript_file, url_input])
         generate_btn.click(
             fn      = run_pipeline,
-            inputs  = [transcript_text, transcript_file, url_input],
+            inputs  = [transcript_text, transcript_file, url_input, voice_dropdown, tone_dropdown],
             outputs = [status_box, key_points_box, quiz_box, script_box, audio_out],
         )
 
