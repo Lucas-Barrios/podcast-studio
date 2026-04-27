@@ -9,3 +9,5 @@ output/*.wav
 .DS_Store
 .ipynb_checkpoints/
 output/
+src/__pycache__/
+tests/__pycache__/
