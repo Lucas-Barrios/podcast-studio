@@ -1,5 +1,5 @@
 """
-src/main.py — Recap Studio
+src/main.py — Learncast
 """
 
 from __future__ import annotations
@@ -7,7 +7,6 @@ import logging, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-sys.path.insert(0, str(Path(__file__).parent / 'src'))
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -35,7 +34,7 @@ def run_pipeline(transcript_text, transcript_file, url_input,
             yield f"❌ {transcript.error}", "", "", "", None
             return
         yield f"✅ Loaded — {transcript.word_count:,} words\n⏳ Generating script...", "", "", "", None
-        script = generate_recap(transcript, tone=tone)
+        script = generate_recap(transcript, tone=tone, mode=mode)
         if not script.is_valid:
             yield f"❌ {script.error}", "", "", "", None
             return
@@ -387,7 +386,7 @@ footer, .footer { display: none !important; }
 
 
 def build_ui():
-    with gr.Blocks(title="Learncast", css=CSS) as demo:
+    with gr.Blocks(title="Learncast") as demo:
 
         gr.HTML(f"""
         <div class="rs-topbar">
@@ -399,7 +398,7 @@ def build_ui():
         </div>
         <div class="rs-hero">
             <h1>Learncast</h1>
-            <p class="rs-hero-sub">Turn any class transcript or PDF into a spoken audio recap — in minutes. </p>
+            <p class="rs-hero-sub">Turn any class transcript or PDF into a spoken audio recap — in minutes.</p>
             <div class="rs-chips">
                 <span class="rs-chip purple">AI-Powered</span>
                 <span class="rs-chip">3 input types</span>
@@ -448,6 +447,12 @@ def build_ui():
                         choices=list(TONE_OPTIONS.keys()),
                         value="Professional",
                         label="Tone",
+                        scale=1,
+                    )
+                    mode_dropdown = gr.Dropdown(
+                        choices=["Quick Recap (~2 min)", "Deep Dive (~8 min)"],
+                        value="Deep Dive (~8 min)",
+                        label="Mode",
                         scale=1,
                     )
 
@@ -516,7 +521,7 @@ def build_ui():
         clear_btn.click(fn=lambda: ("", None, ""), outputs=[transcript_text, transcript_file, url_input])
         generate_btn.click(
             fn=run_pipeline,
-            inputs=[transcript_text, transcript_file, url_input, voice_dropdown, tone_dropdown],
+            inputs=[transcript_text, transcript_file, url_input, voice_dropdown, tone_dropdown, mode_dropdown],
             outputs=[status_box, key_points_box, quiz_box, script_box, audio_out],
         )
 
@@ -524,4 +529,4 @@ def build_ui():
 
 
 if __name__ == "__main__":
-    build_ui().launch(server_name="0.0.0.0", server_port=7860)
+    build_ui().launch(server_name="0.0.0.0", server_port=7860, show_error=True, css=CSS, share=True)
