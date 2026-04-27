@@ -137,7 +137,7 @@ Write ONLY spoken words. No markdown, no bullets.
 [OUTRO]
 1 sentence. Warm close.
 
-TARGET: 250 to 350 words total. Be ruthlessly concise.
+TARGET: 150 to 200 words MAXIMUM. Extremely concise. Every word must earn its place.
 Plain spoken English only. No markdown.
 {tone_instructions}"""
 
@@ -348,7 +348,7 @@ def _parse_response(raw: str, transcript) -> RecapScript:
     )
 
 
-def _call_openai(prompt: str) -> str:
+def _call_openai(prompt: str, mode: str = 'deep') -> str:
     from openai import OpenAI
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
@@ -381,7 +381,7 @@ def generate_recap(transcript, tone: str = 'professional', mode: str = 'deep') -
 
     try:
         prompt = _build_prompt(transcript, tone=tone, mode=mode)
-        raw    = _call_openai(prompt)
+        raw    = _call_openai(prompt, mode=mode)
         script = _parse_response(raw, transcript)
         logger.info(
             "Recap ready — %d key points, %d quiz questions, %d chars",
