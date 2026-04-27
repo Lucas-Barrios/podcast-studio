@@ -4,9 +4,9 @@ src/main.py
 Entry point — Gradio web interface for the Educational Recap pipeline.
 
 Pipeline:
-  1. data_processor  → load_transcript()  → TranscriptData
-  2. llm_processor   → generate_recap()   → RecapScript
-  3. tts_generator   → generate_audio()   → AudioResult + MP3
+  1. data_processor  -> load_transcript()  -> TranscriptData
+  2. llm_processor   -> generate_recap()   -> RecapScript
+  3. tts_generator   -> generate_audio()   -> AudioResult + MP3
 
 Run:
     python src/main.py
@@ -25,7 +25,7 @@ load_dotenv()
 
 import gradio as gr
 
-from data_processor import load_transcript
+from data_processor import load_transcript, load_url
 from llm_processor  import generate_recap
 from tts_generator  import generate_audio
 
@@ -40,15 +40,14 @@ SAMPLE_PATH = Path("data/raw/sample_transcript.txt")
 
 def run_pipeline(transcript_text: str, transcript_file, url_input: str):
     """
-    Full pipeline: transcript → LLM recap → audio.
-    Yields progress updates after each stage so the UI updates in real time.
+    Full pipeline: transcript -> LLM recap -> audio.
+    Yields progress updates after each stage.
     """
 
     # Resolve input source
     if transcript_file is not None:
         source = transcript_file.name
     elif url_input.strip():
-        from data_processor import load_url
         yield "⏳ Stage 1 of 3 — Fetching article from URL...", "", "", "", None
         transcript = load_url(url_input.strip())
         if not transcript.is_valid:
@@ -88,7 +87,7 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
         yield "❌ Please paste a transcript, upload a file, or enter a URL.", "", "", "", None
         return
 
-    # Stage 1 — Load transcript
+    # Stage 1
     yield "⏳ Stage 1 of 3 — Loading transcript...", "", "", "", None
 
     transcript = load_transcript(source)
@@ -103,7 +102,7 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
     )
     yield stage1_msg, "", "", "", None
 
-    # Stage 2 — Generate recap script
+    # Stage 2
     script = generate_recap(transcript)
     if not script.is_valid:
         yield f"❌ Script generation failed: {script.error}", "", "", "", None
@@ -123,7 +122,7 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
         None,
     )
 
-    # Stage 3 — Generate audio
+    # Stage 3
     audio = generate_audio(script)
 
     if not audio.success:
@@ -161,7 +160,6 @@ def run_pipeline(transcript_text: str, transcript_file, url_input: str):
 
 
 def _format_script(script) -> str:
-    """Format the recap script for display in the UI."""
     sections = []
     if script.intro:
         sections.append(f"── INTRO ──\n{script.intro}")
@@ -183,100 +181,278 @@ def _format_script(script) -> str:
 def load_sample() -> str:
     if SAMPLE_PATH.exists():
         return SAMPLE_PATH.read_text(encoding="utf-8")
-    return "Sample file not found. Add a transcript to data/raw/sample_transcript.txt"
+    return "Sample file not found at data/raw/sample_transcript.txt"
 
 
 def build_ui() -> gr.Blocks:
-    with gr.Blocks(
-        title = "🎙️ Class Recap Podcast Generator",
-    ) as demo:
 
-        gr.Markdown("""
-        # 🎙️ Class Recap Podcast Generator
-        Upload a class transcript and get a spoken audio recap in under a minute.
-        **Pipeline:** Transcript → OpenAI extracts key points → OpenAI TTS generates audio
+    css = """
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body, .gradio-container {
+        background: #f7f7f5 !important;
+        font-family: 'DM Sans', sans-serif !important;
+    }
+
+    .app-header {
+        text-align: center;
+        padding: 2.5rem 2rem 1.5rem;
+        border-bottom: 1px solid #e8e8e4;
+        margin-bottom: 2rem;
+    }
+    .app-header h1 {
+        font-family: 'DM Serif Display', serif;
+        font-size: 2.4rem;
+        font-weight: 400;
+        color: #1a1a1a;
+        margin: 0 0 0.4rem;
+        letter-spacing: -0.5px;
+    }
+    .app-header p {
+        color: #6b6b6b;
+        font-size: 1rem;
+        font-weight: 300;
+        margin: 0;
+    }
+    .app-header .badge {
+        display: inline-block;
+        background: #1a1a1a;
+        color: #f7f7f5;
+        font-size: 0.72rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+    }
+
+    .gr-group, .gr-box, .gr-panel {
+        background: #ffffff !important;
+        border: 1px solid #e8e8e4 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
+    }
+
+    label span {
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.07em !important;
+        text-transform: uppercase !important;
+        color: #6b6b6b !important;
+    }
+
+    textarea, input[type="text"] {
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 0.9rem !important;
+        border-radius: 8px !important;
+        border-color: #e8e8e4 !important;
+        background: #fafaf8 !important;
+        color: #1a1a1a !important;
+    }
+    textarea:focus, input[type="text"]:focus {
+        border-color: #1a1a1a !important;
+        box-shadow: 0 0 0 3px rgba(26,26,26,0.06) !important;
+    }
+
+    button.primary {
+        background: #1a1a1a !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        transition: all 0.15s ease !important;
+    }
+    button.primary:hover {
+        background: #333333 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15) !important;
+    }
+
+    button.secondary {
+        background: #ffffff !important;
+        color: #1a1a1a !important;
+        border: 1px solid #e8e8e4 !important;
+        border-radius: 8px !important;
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        transition: all 0.15s ease !important;
+    }
+    button.secondary:hover {
+        background: #f7f7f5 !important;
+        border-color: #1a1a1a !important;
+    }
+
+    .section-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #6b6b6b;
+        margin: 0 0 0.5rem;
+    }
+
+    .divider {
+        border: none;
+        border-top: 1px solid #e8e8e4;
+        margin: 1.25rem 0;
+    }
+
+    .status-box textarea {
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 0.85rem !important;
+        line-height: 1.7 !important;
+        color: #3a3a3a !important;
+    }
+
+    .how-it-works {
+        background: #ffffff;
+        border: 1px solid #e8e8e4;
+        border-radius: 12px;
+        padding: 1.5rem 2rem;
+        margin-top: 1.5rem;
+    }
+    .step {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+    }
+    .step-num {
+        background: #1a1a1a;
+        color: white;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    .step p {
+        font-size: 0.85rem;
+        color: #6b6b6b;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    footer { display: none !important; }
+    """
+
+    with gr.Blocks(title="Recap Studio", css=css) as demo:
+
+        gr.HTML("""
+        <div class="app-header">
+            <div class="badge">AI-Powered Education</div>
+            <h1>🎙 Recap Studio</h1>
+            <p>Transform any class transcript into a spoken podcast recap in seconds</p>
+        </div>
         """)
 
-        gr.Markdown("---")
+        with gr.Row(equal_height=False):
 
-        with gr.Row():
-
-            # Left column — Input
             with gr.Column(scale=1):
-                gr.Markdown("### 📥 Input")
 
+                gr.HTML('<p class="section-label">📥 Paste Transcript</p>')
                 transcript_text = gr.Textbox(
-                    label       = "Paste transcript",
-                    placeholder = "Paste your class transcript here...",
-                    lines       = 16,
+                    label       = "",
+                    placeholder = "Paste your class transcript here...\n\nTip: add a header like:\nTRANSCRIPT — Course Name | Class N\nDate: April 24, 2026\nInstructor: Prof. Name",
+                    lines       = 14,
                 )
 
                 with gr.Row():
-                    sample_btn = gr.Button("📄 Load Sample", variant="secondary")
-                    clear_btn  = gr.Button("🗑 Clear",        variant="secondary")
+                    sample_btn = gr.Button("Load Sample", variant="secondary", scale=1)
+                    clear_btn  = gr.Button("Clear",       variant="secondary", scale=1)
 
-                gr.Markdown("**— or upload a file —**")
-
+                gr.HTML('<hr class="divider"><p class="section-label">📎 Upload File (.txt or .pdf)</p>')
                 transcript_file = gr.File(
-                    label      = "Upload .txt or .pdf file",
+                    label      = "",
                     file_types = [".txt", ".pdf"],
                 )
 
-                gr.Markdown("**— or enter a URL —**")
-
+                gr.HTML('<hr class="divider"><p class="section-label">🔗 Or Paste a URL</p>')
                 url_input = gr.Textbox(
-                    label       = "Article URL",
+                    label       = "",
                     placeholder = "https://example.com/article",
                     lines       = 1,
                 )
 
+                gr.HTML('<hr class="divider">')
                 generate_btn = gr.Button(
-                    "🎙️  Generate Recap Podcast",
+                    "Generate Recap Podcast →",
                     variant = "primary",
                     size    = "lg",
                 )
 
-            # Right column — Output
             with gr.Column(scale=1):
-                gr.Markdown("### 📤 Output")
 
+                gr.HTML('<p class="section-label">📊 Pipeline Status</p>')
                 status_box = gr.Textbox(
-                    label       = "Pipeline Status",
-                    interactive = False,
-                    lines       = 7,
-                    placeholder = "Status updates will appear here...",
+                    label        = "",
+                    interactive  = False,
+                    lines        = 6,
+                    placeholder  = "Status updates appear here...",
+                    elem_classes = ["status-box"],
                 )
 
+                gr.HTML('<hr class="divider"><p class="section-label">🔊 Audio Output</p>')
                 audio_out = gr.Audio(
-                    label       = "🔊 Recap Podcast",
+                    label       = "",
                     type        = "filepath",
                     interactive = False,
                 )
 
+                gr.HTML('<hr class="divider"><p class="section-label">📋 Generated Content</p>')
                 with gr.Tabs():
-                    with gr.Tab("✅ Key Points"):
+                    with gr.Tab("Key Points"):
                         key_points_box = gr.Textbox(
-                            label            = "Extracted key concepts",
-                            lines            = 8,
-                            interactive      = False,
-                            placeholder      = "Key points appear here after generation...",
+                            label       = "",
+                            lines       = 8,
+                            interactive = False,
+                            placeholder = "Key concepts extracted from the transcript...",
                         )
-                    with gr.Tab("❓ Self-Test"):
+                    with gr.Tab("Self-Test"):
                         quiz_box = gr.Textbox(
-                            label            = "Test your understanding",
-                            lines            = 5,
-                            interactive      = False,
-                            placeholder      = "Quiz questions appear here after generation...",
+                            label       = "",
+                            lines       = 6,
+                            interactive = False,
+                            placeholder = "Quiz questions to test your understanding...",
                         )
-                    with gr.Tab("📄 Full Script"):
+                    with gr.Tab("Full Script"):
                         script_box = gr.Textbox(
-                            label            = "Full narration script",
-                            lines            = 18,
-                            interactive      = False,
-                            placeholder      = "Full script appears here after generation...",
+                            label       = "",
+                            lines       = 18,
+                            interactive = False,
+                            placeholder = "The full narration script...",
                         )
 
-        # Wire up buttons
+        gr.HTML("""
+        <div class="how-it-works">
+            <p class="section-label" style="color:#1a1a1a; margin-bottom:0.75rem;">How it works</p>
+            <div class="step">
+                <div class="step-num">1</div>
+                <p><strong>data_processor.py</strong> — loads your transcript, strips timestamps, handles PDF and URL sources</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <p><strong>llm_processor.py</strong> — sends to GPT-5.2 with Feynman + Story Arc prompting, builds structured script</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <p><strong>tts_generator.py</strong> — converts script to MP3 via OpenAI TTS (nova voice)</p>
+            </div>
+        </div>
+        """)
+
         sample_btn.click(fn=load_sample, outputs=transcript_text)
         clear_btn.click(fn=lambda: ("", None, ""), outputs=[transcript_text, transcript_file, url_input])
 
@@ -285,14 +461,6 @@ def build_ui() -> gr.Blocks:
             inputs  = [transcript_text, transcript_file, url_input],
             outputs = [status_box, key_points_box, quiz_box, script_box, audio_out],
         )
-
-        gr.Markdown("---")
-        gr.Markdown("""
-        **How it works:**
-        `data_processor.py` → cleans transcript, strips timestamps, extracts metadata  
-        `llm_processor.py` → sends to OpenAI, extracts key points, builds structured script  
-        `tts_generator.py` → converts script to MP3 via OpenAI TTS or free gTTS fallback
-        """)
 
     return demo
 
