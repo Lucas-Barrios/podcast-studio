@@ -111,8 +111,41 @@ TONE: Clear, direct and professional. Warm but focused. No filler.
 """
 
 
-def _build_prompt(transcript, tone: str = 'professional') -> str:
+
+def _build_quick_prompt(transcript, tone_instructions: str) -> str:
+    return f"""Transform this class transcript into a SHORT podcast recap — maximum 2-3 minutes when spoken.
+
+CONTEXT:
+- Course: {transcript.class_name}
+- Date: {transcript.date}
+
+TRANSCRIPT:
+{transcript.clean_text[:6000]}
+
+OUTPUT FORMAT — produce each section with its label in square brackets.
+Write ONLY spoken words. No markdown, no bullets.
+
+[INTRO]
+1 sentence. Name the course and hook the listener.
+
+[KEY POINTS]
+3 key concepts only. Each one: name it, explain it in 2 sentences, say why it matters.
+
+[TAKEAWAY]
+1 sentence starting with: If you remember only one thing from today...
+
+[OUTRO]
+1 sentence. Warm close.
+
+TARGET: 250 to 350 words total. Be ruthlessly concise.
+Plain spoken English only. No markdown.
+{tone_instructions}"""
+
+
+def _build_prompt(transcript, tone: str = 'professional', mode: str = 'deep') -> str:
     tone_instructions = _get_tone_instructions(tone)
+    if mode == 'quick':
+        return _build_quick_prompt(transcript, tone_instructions)
     return f"""\
 Transform this class transcript into a long-form educational podcast episode
 that combines the Feynman Method with a Story Arc structure.
@@ -332,7 +365,7 @@ def _call_openai(prompt: str) -> str:
     return response.choices[0].message.content
 
 
-def generate_recap(transcript, tone: str = 'professional') -> RecapScript:
+def generate_recap(transcript, tone: str = 'professional', mode: str = 'deep') -> RecapScript:
     """
     Transform a TranscriptData into a RecapScript using OpenAI.
     Uses Feynman Method + Story Arc prompt strategy.
@@ -347,7 +380,7 @@ def generate_recap(transcript, tone: str = 'professional') -> RecapScript:
     logger.info("Generating recap for: %s", transcript.class_name)
 
     try:
-        prompt = _build_prompt(transcript, tone=tone)
+        prompt = _build_prompt(transcript, tone=tone, mode=mode)
         raw    = _call_openai(prompt)
         script = _parse_response(raw, transcript)
         logger.info(
