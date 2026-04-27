@@ -22,9 +22,11 @@ SAMPLE_PATH = Path("data/raw/sample_transcript.txt")
 
 
 def run_pipeline(transcript_text, transcript_file, url_input,
-                 voice_label="Nova (Female, Warm)", tone_label="Professional"):
+                 voice_label="Nova (Female, Warm)", tone_label="Professional",
+                 mode_label="Deep Dive (~8 min)"):
     voice = VOICE_OPTIONS.get(voice_label, DEFAULT_VOICE)
     tone  = TONE_OPTIONS.get(tone_label, "professional")
+    mode  = "quick" if "Quick" in mode_label else "deep"
 
     if transcript_file is not None:
         source = transcript_file.name
