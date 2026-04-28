@@ -101,7 +101,7 @@ CSS = """
 
 html, body, .gradio-container {
     font-family: 'Inter', -apple-system, sans-serif !important;
-    background-color: #0e0e16 !important;
+    background-color: #f5f5f0 !important;
     color: #c9c7d4 !important;
 }
 
@@ -118,8 +118,8 @@ html, body, .gradio-container {
 
 /* ── Topbar ── */
 .rs-topbar {
-    background: #0b0b12;
-    border-bottom: 1px solid #1e1e30;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0da;
     padding: 0.8rem 2.5rem;
     display: flex;
     align-items: center;
@@ -131,7 +131,7 @@ html, body, .gradio-container {
     gap: 0.6rem;
     font-size: 0.9rem;
     font-weight: 700;
-    color: #fff;
+    color: #1a1a1a;
     letter-spacing: -0.3px;
 }
 .rs-logo-dot {
@@ -142,7 +142,7 @@ html, body, .gradio-container {
 }
 .rs-topbar-right {
     font-size: 0.72rem;
-    color: #44445a;
+    color: #888880;
     font-weight: 400;
     letter-spacing: 0.02em;
 }
@@ -165,7 +165,7 @@ html, body, .gradio-container {
 .rs-hero h1 {
     font-size: 3.6rem;
     font-weight: 900;
-    color: #ffffff;
+    color: #1a1a1a;
     letter-spacing: -2.5px;
     line-height: 1.0;
     margin-bottom: 0.9rem;
@@ -185,7 +185,7 @@ html, body, .gradio-container {
     flex-wrap: wrap;
 }
 .rs-chip {
-    background: #13131e;
+    background: #ffffff;
     border: 1px solid #22223a;
     border-radius: 100px;
     padding: 0.28rem 0.8rem;
@@ -212,8 +212,8 @@ html, body, .gradio-container {
 
 /* ── Card ── */
 .rs-card {
-    background: #13131e;
-    border: 1px solid #1e1e30;
+    background: #ffffff;
+    border: 1px solid #e0e0da;
     border-radius: 16px;
     padding: 1.5rem;
 }
@@ -222,7 +222,7 @@ html, body, .gradio-container {
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #44445a;
+    color: #888880;
     margin-bottom: 0.75rem;
 }
 
@@ -240,7 +240,7 @@ label > span, .gr-form label span, label span {
     font-weight: 700 !important;
     letter-spacing: 0.12em !important;
     text-transform: uppercase !important;
-    color: #44445a !important;
+    color: #888880 !important;
 }
 
 /* ── Inputs & textareas ── */
@@ -248,10 +248,10 @@ textarea, input[type="text"] {
     font-family: 'Inter', sans-serif !important;
     font-size: 0.93rem !important;
     font-weight: 400 !important;
-    background: #0b0b14 !important;
-    border: 1px solid #22223a !important;
+    background: #f9f9f6 !important;
+    border: 1px solid #ddddd8 !important;
     border-radius: 10px !important;
-    color: #d0cfe0 !important;
+    color: #1a1a1a !important;
     line-height: 1.65 !important;
     transition: border-color 0.15s, box-shadow 0.15s !important;
     padding: 0.75rem 1rem !important;
@@ -262,24 +262,24 @@ textarea:focus, input[type="text"]:focus {
     outline: none !important;
 }
 textarea::placeholder, input::placeholder {
-    color: #2e2e48 !important;
+    color: #aaaaaa !important;
 }
 
 /* ── Select / Dropdown ── */
 select {
     font-family: 'Inter', sans-serif !important;
     font-size: 0.88rem !important;
-    background: #0b0b14 !important;
-    border: 1px solid #22223a !important;
+    background: #f9f9f6 !important;
+    border: 1px solid #ddddd8 !important;
     border-radius: 10px !important;
-    color: #c0bfd0 !important;
+    color: #1a1a1a !important;
     padding: 0.6rem 0.9rem !important;
 }
 
 /* ── Buttons ── */
 button.primary {
     font-family: 'Inter', sans-serif !important;
-    background: #8b5cf6 !important;
+    background: #7c3aed !important;
     color: #fff !important;
     border: none !important;
     border-radius: 10px !important;
@@ -297,39 +297,39 @@ button.primary:hover {
 }
 button.secondary {
     font-family: 'Inter', sans-serif !important;
-    background: #13131e !important;
-    color: #7070a0 !important;
-    border: 1px solid #22223a !important;
+    background: #f0eefc !important;
+    color: #5a5a8a !important;
+    border: 1px solid #ddddd8 !important;
     border-radius: 10px !important;
     font-size: 0.83rem !important;
     font-weight: 600 !important;
     transition: all 0.15s !important;
 }
 button.secondary:hover {
-    background: #1a1a2e !important;
-    color: #c0bfd0 !important;
+    background: #ece9fc !important;
+    color: #1a1a1a !important;
     border-color: #3a3a58 !important;
 }
 
 /* ── File upload ── */
 .gr-upload, .upload-btn-wrapper, [data-testid="upload-btn"] {
-    background: #0b0b14 !important;
+    background: #f9f9f6 !important;
     border: 1px dashed #22223a !important;
     border-radius: 10px !important;
-    color: #44445a !important;
+    color: #888880 !important;
 }
 .gr-upload:hover { border-color: #8b5cf6 !important; }
 
 /* ── Tabs ── */
 .gr-tab-nav, div[role="tablist"] {
     background: transparent !important;
-    border-bottom: 1px solid #1e1e30 !important;
+    border-bottom: 1px solid #e0e0da !important;
 }
 .gr-tab-nav button, div[role="tab"] {
     font-family: 'Inter', sans-serif !important;
     font-size: 0.8rem !important;
     font-weight: 600 !important;
-    color: #44445a !important;
+    color: #888880 !important;
     background: transparent !important;
     border: none !important;
     border-bottom: 2px solid transparent !important;
@@ -337,8 +337,8 @@ button.secondary:hover {
     letter-spacing: 0.01em !important;
 }
 .gr-tab-nav button.selected, div[role="tab"][aria-selected="true"] {
-    color: #a78bfa !important;
-    border-bottom-color: #8b5cf6 !important;
+    color: #7c3aed !important;
+    border-bottom-color: #7c3aed !important;
     background: transparent !important;
 }
 
@@ -347,14 +347,14 @@ button.secondary:hover {
     font-family: 'Inter', sans-serif !important;
     font-size: 0.85rem !important;
     line-height: 2 !important;
-    color: #8888aa !important;
-    background: #0b0b14 !important;
+    color: #555555 !important;
+    background: #f9f9f6 !important;
 }
 
 /* ── Audio player ── */
 .gr-audio, [data-testid="audio"] {
-    background: #0b0b14 !important;
-    border: 1px solid #22223a !important;
+    background: #f9f9f6 !important;
+    border: 1px solid #ddddd8 !important;
     border-radius: 10px !important;
 }
 
@@ -366,7 +366,7 @@ button.secondary:hover {
     margin-top: 1rem;
     padding: 0.85rem 1.1rem;
     background: #0b0b14;
-    border: 1px solid #1e1e30;
+    border: 1px solid #e0e0da;
     border-radius: 10px;
 }
 .rs-step { display: flex; align-items: center; gap: 0.5rem; flex: 1; }
@@ -381,7 +381,7 @@ button.secondary:hover {
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
 }
-.rs-step-t { font-size: 0.73rem; font-weight: 500; color: #44445a; }
+.rs-step-t { font-size: 0.73rem; font-weight: 500; color: #888880; }
 .rs-step-sep { color: #22223a; font-size: 0.9rem; }
 
 footer, .footer { display: none !important; }
